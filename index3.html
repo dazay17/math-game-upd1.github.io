@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Логический режим</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@300;800&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+        body {
+            font-family: "Montserrat", sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #2e7d32;
+        }
+
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            border: 2px solid #4caf50;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;  
+        }
+
+        h1 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+
+        h2 {
+            color: #4caf50;
+            margin-top: 0;
+            font-weight: normal;
+        }
+
+        .level-display {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            display: inline-block;
+            animation: pulse-level 2s infinite;
+        }
+
+        .score {
+            font-size: 24px;
+            margin: 20px;
+            color: #2e7d32;
+        }
+
+        .matrix-container {
+            font-size: 30px;
+            margin: 20px 0;
+            line-height: 60px;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            font-size: 24px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            background: #4caf50;
+            transform: scale(1.1);
+        }
+
+        .result {
+            font-size: 20px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .correct { color: #27ae60; }
+        .incorrect { color: #e74c3c; }
+
+        @keyframes pulse-level {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🧠 Логические матрицы</h1>
+        <h2>Найди правильный ответ</h2>
+        
+        <div class="level-display">
+            Задача: <span id="task-number">1</span>/5
+        </div>
+
+        <div class="score">Правильно: <span id="score">0</span></div>
+
+        <div class="matrix-container" id="matrix">
+            <!-- Матрица будет здесь -->
+        </div>
+
+        <div class="options" id="options">
+            <!-- Варианты ответов -->
+        </div>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let currentTask = 0;
+        let score = 0;
+
+        const tasks = [
+            {
+                matrix: [
+                    "🟦 🟦 🟦",
+                    "🟥 🟥 ❓",
+                    "🟩 🟩 🟩"
+                ],
+                options: ["🟦", "🟥", "🟩", "🟨"],
+                correct: 1
+            },
+            {
+                matrix: [
+                    "▲ ▲ ▲",
+                    "▼ ▼ ❓",
+                    "● ● ●"
+                ],
+                options: ["▲", "▼", "●", "◆"],
+                correct: 1
+            },
+            {
+                matrix: [
+                    "🟦 🟥 🟦",
+                    "🟥 🟦 🟥",
+                    "🟦 🟥 ❓"
+                ],
+                options: ["🟦", "🟥", "🟩", "🟨"],
+                correct: 0
+            },
+            {
+                matrix: [
+                    "●   ●●   ●●●",
+                    "●●   ●●●  ❓",
+                    "●●●  ●●●●   ●●●●●"
+                ],
+                options: ["●●●●", "●●●", "●●", "●"],
+                correct: 0
+            },
+            {
+                matrix: [
+                    "◴ ◷ ◶",
+                    "◵ ◴ ❓",
+                    "◷ ◶ ◵"
+                ],
+                options: ["◷", "◴", "◵", "◶"],
+                correct: 0
+            }
+        ];
+
+        function showTask() {
+            const task = tasks[currentTask];
+            document.getElementById('task-number').textContent = currentTask + 1;
+            
+            // Показываем матрицу
+            document.getElementById('matrix').innerHTML = 
+                task.matrix.map(row => `<div>${row}</div>`).join('');
+            
+            // Показываем варианты ответов
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            task.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            document.getElementById('result').textContent = '';
+        }
+
+        function checkAnswer(selectedIndex) {
+            const task = tasks[currentTask];
+            const resultElement = document.getElementById('result');
+            
+            if (selectedIndex === task.correct) {
+                resultElement.textContent = '✅ Правильно!';
+                resultElement.className = 'result correct';
+                score++;
+                document.getElementById('score').textContent = score;
+                
+                // Следующая задача через секунду
+                setTimeout(() => {
+    currentTask++;
+    if (currentTask < tasks.length) {
+        showTask();
+    } else {
+        resultElement.textContent = `🎉 Игра завершена! Правильных ответов: ${score}/${tasks.length}`;
+        document.getElementById('matrix').innerHTML = '';
+        document.getElementById('options').innerHTML = '';
+        
+        // Убедись что фото лежит В ТОЙ ЖЕ ПАПКЕ что и HTML файл
+        const imageUrl = 'кир.jpg';
+        
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = 'Поздравление!';
+        img.style.maxWidth = '300px';
+        img.style.marginTop = '20px';
+        img.style.borderRadius = '10px';
+        img.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+        
+        document.getElementById('matrix').appendChild(img);
+    }
+}, 1000);
+            } else {
+                resultElement.textContent = '❌ Неправильно, попробуйте еще, гей.';
+                resultElement.className = 'result incorrect';
+            }
+        }
+
+        // Начинаем игру
+        window.onload = showTask;
+    </script>
+</body>
+</html>
